@@ -12,6 +12,9 @@ import (
 type MarkovModel struct {
 	CurrentState *State
 	States       []*State
+
+	LogLevel       int
+	StatusCallback func(int, int)
 }
 
 func (mm *MarkovModel) Advance() {
@@ -23,7 +26,9 @@ func (mm *MarkovModel) Train(input string) {
 
 	// Calculate states
 	println("\n\nCalculating states...\n")
-	bar := progressbar.New(len(split))
+	//bar := progressbar.New(len(split))
+	state := 0
+	total := len(split)
 	for _, data := range split {
 		st := mm.FindState(data)
 		if st == -1 {
@@ -32,12 +37,20 @@ func (mm *MarkovModel) Train(input string) {
 				Changes: make(map[*State]int),
 			})
 		}
-		bar.Add(1)
+
+		state++
+		//bar.Add(1)
+
+		if mm.StatusCallback != nil {
+			mm.StatusCallback(0, int(float32(state)/float32(total)*100))
+		}
 	}
 
 	// Calculate state changes
 	println("\n\nCalculating state changes...\n")
-	bar = progressbar.New(len(split))
+	//bar = progressbar.New(len(split))
+	total = len(split) - 2
+	state = 0
 	for ind, data := range split {
 		if ind == len(split)-2 {
 			break
@@ -54,18 +67,30 @@ func (mm *MarkovModel) Train(input string) {
 		} else {
 			state1.Changes[state2] = 1
 		}
-		bar.Add(1)
+
+		//bar.Add(1)
+		state++
+		if mm.StatusCallback != nil {
+			mm.StatusCallback(1, int(float32(state)/float32(total)*100))
+		}
 	}
 
 	// Calculate sample sizes
 	println("\n\nCalculating sample sizes...\n")
-	bar = progressbar.New(len(mm.States))
+	//bar = progressbar.New(len(mm.States))
+	state = 0
+	total = len(mm.States)
 	for _, st := range mm.States {
 		st.SampleSize = 0
 		for _, amt := range st.Changes {
 			st.SampleSize += amt
 		}
-		bar.Add(1)
+
+		//bar.Add(1)
+		state++
+		if mm.StatusCallback != nil {
+			mm.StatusCallback(2, int(float32(state)/float32(total)*100))
+		}
 	}
 	println("\n\n")
 	println("Num states:", len(mm.States), "\n\n")
