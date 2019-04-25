@@ -4,4 +4,4 @@ This is a simple text generator which uses a Markov Chain trained on a sample of
 
 http://markovtext.ml
 
-The Markov Chain code is written and Go and compiled to WebAssembly, which is then called by the React App.
+The Markov Chain code is written in Go and compiled to WebAssembly, which is then called by the React App.
